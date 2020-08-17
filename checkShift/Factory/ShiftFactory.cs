@@ -186,7 +186,7 @@ namespace checkShift.Factory
 
         }
 
-        public bool checkShift(PersonalShift personalShift, DateTime mStartDate, DateTime mEndDate,out string errMsg)
+        public bool checkShift(PersonalShift personalShift, DateTime mStartDate, DateTime mEndDate,bool isCheck8PeriodWork, out string errMsg)
         {
             errMsg = "";
             List<WorkDay> workDays = personalShift.WorkDays.OrderBy(e => e.workDay).ToList();
@@ -223,15 +223,19 @@ namespace checkShift.Factory
                 }  
             }
 
-            //檢查8週變形工時
-            workDays = personalShift.WorkDays.Where(e=>e.workDay.CompareTo(DateTime.Parse(mStartDate.ToString("yyyy/MM/dd")))>=0 && e.workDay.CompareTo(DateTime.Parse(mEndDate.ToString("yyyy/MM/dd"))) <=0).OrderBy(e => e.workDay).ToList();
-
-            int HolidayCount = workDays.Where(e => e.Shift.Trim().ToUpper() == "Z01" || e.Shift.Trim().ToUpper() == "Z07").Count();
-            if (HolidayCount < 16)
+            if(isCheck8PeriodWork)
             {
-                errMsg = personalShift.UserName + "(" + personalShift.UserId + ") 違反八週變形工時規定，在週期內休假" + HolidayCount +"天，請檢查!";
-                return false;
+                //檢查8週變形工時
+                workDays = personalShift.WorkDays.Where(e => e.workDay.CompareTo(DateTime.Parse(mStartDate.ToString("yyyy/MM/dd"))) >= 0 && e.workDay.CompareTo(DateTime.Parse(mEndDate.ToString("yyyy/MM/dd"))) <= 0).OrderBy(e => e.workDay).ToList();
+
+                int HolidayCount = workDays.Where(e => e.Shift.Trim().ToUpper() == "Z01" || e.Shift.Trim().ToUpper() == "Z07").Count();
+                if (HolidayCount < 16)
+                {
+                    errMsg = personalShift.UserName + "(" + personalShift.UserId + ") 違反八週變形工時規定，在週期內休假" + HolidayCount + "天，請檢查!";
+                    return false;
+                }
             }
+            
 
             return true;
         }

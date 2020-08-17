@@ -31,7 +31,7 @@ namespace checkShift
             string errMsg = "";
             foreach (PersonalShift personalShift in personalShifts)
             {
-                if(!shiftFactory.checkShift(personalShift, dateTimePicker1.Value, dateTimePicker2.Value,out errMsg))
+                if(!shiftFactory.checkShift(personalShift, dateTimePicker1.Value, dateTimePicker2.Value, checkBox1.Checked, out errMsg))
                 {
                     richTextBox1.AppendText(errMsg + "\r\n");
                 }
