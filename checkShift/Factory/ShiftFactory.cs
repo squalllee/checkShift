@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using checkShift.Models;
 using NPOI.HSSF.UserModel;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
@@ -16,6 +17,8 @@ namespace checkShift.Factory
         IWorkbook wk = null;
         
         List<ConflictShiftModel> conflictShiftModels = new List<ConflictShiftModel>();
+
+        string[] replaceString = { "(一)", "(二)", "(三)", "(四)", "(五)", "(六)" ,"(日)"};
 
         public ShiftFactory()
         {
@@ -129,7 +132,7 @@ namespace checkShift.Factory
             }
 
             fs.Close();
-            //讀取當前表數據
+
             ISheet sheet = null;
 
             IRow row = null;
@@ -138,45 +141,93 @@ namespace checkShift.Factory
             {
                 sheet = wk.GetSheetAt(sheetIndex);
                 dayInMonth = DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month);
-                for (int i = startRowIndex; i < sheet.LastRowNum; i++)
-                {
-                    row = sheet.GetRow(i);
-                    if (row == null || row.Cells.Count == 0) continue;
-                    for (int j = startColumnIndex; j < startColumnIndex + dayInMonth + 2; j++)
-                    {
-                        if (j == 1)
-                        {
-                            if(row.GetCell(startColumnIndex) == null)
-                            {
-                                break;
-                            }
-                            if(personalShifts.Where(e => e.UserId == row.GetCell(startColumnIndex).ToString()).Count() == 0)
-                            {
-                                personalShifts.Add(new PersonalShift
-                                {
-                                    UserId = row.GetCell(j).ToString(),
-                                    UserName = row.GetCell(j + 1).ToString(),
-                                    WorkDays = new List<WorkDay>()
-                                });
-                            }
-                           
 
-                            j += 1;
+                if(currentMonth != endMonth)
+                {
+                    //讀取實際班表
+                    for (int i = 1; i < sheet.LastRowNum; i++)
+                    {
+                        row = sheet.GetRow(i);
+                        if (row == null || row.Cells.Count == 0) continue;
+                        if (row.GetCell(0).ToString() == "") continue;
+
+                        if (personalShifts.Where(e => e.UserId == row.GetCell(0).ToString().Trim()).Count() == 0)
+                        {
+                            PersonalShift personalShift = new PersonalShift
+                            {
+                                UserId = row.GetCell(0).ToString().Trim(),
+                                UserName = row.GetCell(1).ToString(),
+                                WorkDays = new List<WorkDay>()
+                            };
+
+                            personalShift.WorkDays.Add(new WorkDay
+                            {
+                                workDay = DateTime.Parse(row.GetCell(3).ToString().Replace(replaceString.Where(e => row.GetCell(3).ToString().Contains(e)).Single(), "")),
+                                Shift = row.GetCell(2).ToString()
+                            });
+
+                            personalShifts.Add(personalShift) ;
+
+           
                         }
                         else
                         {
-                            PersonalShift personalShift = personalShifts.Where(e => e.UserId == row.GetCell(startColumnIndex).ToString()).Single();
+                            PersonalShift personalShift = personalShifts.Where(e => e.UserId == row.GetCell(0).ToString()).Single();
                             if (personalShift != null)
                             {
                                 personalShift.WorkDays.Add(new WorkDay
                                 {
-                                    workDay = DateTime.Parse(currentMonth.ToString("yyyy/MM/") + (j - 2).ToString("00")),
-                                    Shift = row.GetCell(j).ToString()
+                                    workDay = DateTime.Parse(row.GetCell(3).ToString().Replace(replaceString.Where(e => row.GetCell(3).ToString().Contains(e)).Single(), "")),
+                                    Shift = row.GetCell(2).ToString()
                                 });
                             }
                         }
                     }
                 }
+                else
+                {
+                    //讀取預排班表
+                    for (int i = startRowIndex; i < sheet.LastRowNum; i++)
+                    {
+                        row = sheet.GetRow(i);
+                        if (row == null || row.Cells.Count == 0) continue;
+                        for (int j = startColumnIndex; j < startColumnIndex + dayInMonth + 2; j++)
+                        {
+                            if (j == 1)
+                            {
+                                if (row.GetCell(startColumnIndex) == null)
+                                {
+                                    break;
+                                }
+
+                                if (personalShifts.Where(e => e.UserId == row.GetCell(startColumnIndex).ToString()).Count() == 0)
+                                {
+                                    personalShifts.Add(new PersonalShift
+                                    {
+                                        UserId = row.GetCell(j).ToString(),
+                                        UserName = row.GetCell(j + 1).ToString(),
+                                        WorkDays = new List<WorkDay>()
+                                    });
+                                }
+
+                                j += 1;
+                            }
+                            else
+                            {
+                                PersonalShift personalShift = personalShifts.Where(e => e.UserId == row.GetCell(startColumnIndex).ToString()).Single();
+                                if (personalShift != null)
+                                {
+                                    personalShift.WorkDays.Add(new WorkDay
+                                    {
+                                        workDay = DateTime.Parse(currentMonth.ToString("yyyy/MM/") + (j - 2).ToString("00")),
+                                        Shift = row.GetCell(j).ToString()
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+               
                 currentMonth = currentMonth.AddMonths(1);
                 
             }
