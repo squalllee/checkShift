@@ -38,12 +38,13 @@
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.dateTimePicker2 = new System.Windows.Forms.DateTimePicker();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.button3 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button1.Location = new System.Drawing.Point(206, 450);
+            this.button1.Location = new System.Drawing.Point(84, 450);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(151, 67);
             this.button1.TabIndex = 0;
@@ -128,6 +129,17 @@
             this.checkBox1.Text = "是否檢核八週變形工時";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
+            // button3
+            // 
+            this.button3.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button3.Location = new System.Drawing.Point(276, 450);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(151, 67);
+            this.button3.TabIndex = 0;
+            this.button3.Text = "檢查系統班表";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -141,6 +153,7 @@
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.button3);
             this.Controls.Add(this.button1);
             this.Name = "Form1";
             this.Text = "班表檢查";
@@ -161,6 +174,7 @@
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
         private System.Windows.Forms.DateTimePicker dateTimePicker2;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Button button3;
     }
 }
 

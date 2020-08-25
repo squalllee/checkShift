@@ -57,5 +57,22 @@ namespace checkShift
             }
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            richTextBox1.Text = "";
+            ShiftFactory shiftFactory = new ShiftFactory();
+            List<PersonalShift> personalShifts = shiftFactory.ReadShirtFromDB(dateTimePicker1.Value, dateTimePicker2.Value);
+
+            string errMsg = "";
+            foreach (PersonalShift personalShift in personalShifts)
+            {
+                if (!shiftFactory.checkShift(personalShift, dateTimePicker1.Value, dateTimePicker2.Value, checkBox1.Checked, out errMsg))
+                {
+                    richTextBox1.AppendText(errMsg + "\r\n");
+                }
+            }
+
+            MessageBox.Show("檢查完畢!");
+        }
     }
 }

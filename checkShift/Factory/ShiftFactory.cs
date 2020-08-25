@@ -1,14 +1,13 @@
-﻿using System;
+﻿using checkShift.Models;
+using checkShift.Util;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using SqlSugar;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using checkShift.Models;
-using NPOI.HSSF.UserModel;
-using NPOI.SS.Formula.Functions;
-using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
 
 namespace checkShift.Factory
 {
@@ -102,6 +101,52 @@ namespace checkShift.Factory
                 ConflictShift = new List<string>(confictshift)
             });
 
+
+        }
+
+        public List<PersonalShift> ReadShirtFromDB(DateTime mStartDate, DateTime mEndDate)
+        {
+            List<PersonalShift> personalShifts = new List<PersonalShift>();
+
+            SqlSugarClient db = SugarFactory.GetInstance("data source=192.168.3.251;initial catalog=ATT_TCM;persist security info=True;user id=TCM;password=mrt+6182461824;");
+
+            List<ATTENDANCE> aTTENDANCEs = db.SqlQueryable<ATTENDANCE>("SELECT TEAMMEMBER.KEYNO,TEAMMEMBER.TMNAME,TEAMMEMBER.UNITNO,ATTENDANCE.CID,ATTENDANCE.WORKDATE " +
+                "FROM ATTENDANCE inner join TEAMMEMBER on ATTENDANCE.KEYNO = TEAMMEMBER.KEYNO where TEAMMEMBER.UNITNO like 'L1%' and WORKDATE between '" + mStartDate.ToTaiwanDate() +"' and '" + mEndDate.ToTaiwanDate() + "'").ToList();
+
+           
+            foreach (ATTENDANCE aTTENDANCE in aTTENDANCEs)
+            {
+                PersonalShift personalShift = personalShifts.Where(e => e.UserId == aTTENDANCE.KEYNO.Trim()).FirstOrDefault();
+                
+
+                if (personalShift != null)
+                {
+                    personalShift.WorkDays.Add(new WorkDay
+                    {
+                        workDay = DateTime.Parse($"{int.Parse(aTTENDANCE.WORKDATE.Substring(0, 3)) + 1911}/{aTTENDANCE.WORKDATE.Substring(3, 2)}/{aTTENDANCE.WORKDATE.Substring(5, 2)}"),
+                        Shift = aTTENDANCE.CID
+                    });
+                }
+                else
+                {
+                    personalShift = new PersonalShift
+                    {
+                        UserId = aTTENDANCE.KEYNO.Trim(),
+                        UserName = aTTENDANCE.TMNAME.Trim(),
+                        WorkDays = new List<WorkDay>()
+                    };
+
+                    personalShift.WorkDays.Add(new WorkDay
+                    {
+                        workDay = DateTime.Parse($"{int.Parse(aTTENDANCE.WORKDATE.Substring(0, 3)) + 1911}/{aTTENDANCE.WORKDATE.Substring(3, 2)}/{aTTENDANCE.WORKDATE.Substring(5, 2)}"),
+                        Shift = aTTENDANCE.CID
+                    });
+
+                    personalShifts.Add(personalShift);
+                }
+            }
+
+            return personalShifts;
 
         }
         public List<PersonalShift> ReadShirt(string filePath,DateTime mStartDate, DateTime mEndDate)

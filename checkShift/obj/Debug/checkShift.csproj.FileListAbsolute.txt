@@ -58,3 +58,5 @@ C:\Users\jaffl\OneDrive\桌面\checkShift\checkShift\obj\Debug\checkShift.csproj
 C:\Users\jaffl\OneDrive\桌面\checkShift\checkShift\obj\Debug\checkShift.csproj.CopyComplete
 C:\Users\jaffl\OneDrive\桌面\checkShift\checkShift\obj\Debug\checkShift.exe
 C:\Users\jaffl\OneDrive\桌面\checkShift\checkShift\obj\Debug\checkShift.pdb
+D:\Source\checkShift\checkShift\bin\Debug\SqlSugar.dll
+D:\Source\checkShift\checkShift\bin\Debug\Newtonsoft.Json.dll
