@@ -110,10 +110,13 @@ namespace checkShift.Factory
 
             SqlSugarClient db = SugarFactory.GetInstance("data source=192.168.3.251;initial catalog=ATT_TCM;persist security info=True;user id=TCM;password=mrt+6182461824;");
 
-            List<ATTENDANCE> aTTENDANCEs = db.SqlQueryable<ATTENDANCE>("SELECT TEAMMEMBER.KEYNO,TEAMMEMBER.TMNAME,TEAMMEMBER.UNITNO,ATTENDANCE.CID,ATTENDANCE.WORKDATE " +
-                "FROM ATTENDANCE inner join TEAMMEMBER on ATTENDANCE.KEYNO = TEAMMEMBER.KEYNO where TEAMMEMBER.UNITNO like 'L1%' and WORKDATE between '" + mStartDate.ToTaiwanDate() +"' and '" + mEndDate.ToTaiwanDate() + "'").ToList();
+            //List<ATTENDANCE> aTTENDANCEs = db.SqlQueryable<ATTENDANCE>("SELECT TEAMMEMBER.KEYNO,TEAMMEMBER.TMNAME,TEAMMEMBER.UNITNO,ATTENDANCE.CID,ATTENDANCE.WORKDATE " +
+            //    "FROM ATTENDANCE inner join TEAMMEMBER on ATTENDANCE.KEYNO = TEAMMEMBER.KEYNO where TEAMMEMBER.UNITNO like 'L1%' and WORKDATE between '" + mStartDate.ToTaiwanDate() +"' and '" + mEndDate.ToTaiwanDate() + "'").ToList();
 
-           
+            List<ATTENDANCE> aTTENDANCEs = db.SqlQueryable<ATTENDANCE>("SELECT TEAMMEMBER.KEYNO,TEAMMEMBER.TMNAME,TEAMMEMBER.UNITNO,ATTENDANCE.CID,ATTENDANCE.WORKDATE " +
+                "FROM ATTENDANCE inner join TEAMMEMBER on ATTENDANCE.KEYNO = TEAMMEMBER.KEYNO where WORKDATE between '" + mStartDate.ToTaiwanDate() + "' and '" + mEndDate.ToTaiwanDate() + "'").ToList();
+
+
             foreach (ATTENDANCE aTTENDANCE in aTTENDANCEs)
             {
                 PersonalShift personalShift = personalShifts.Where(e => e.UserId == aTTENDANCE.KEYNO.Trim()).FirstOrDefault();
