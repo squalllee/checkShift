@@ -61,7 +61,7 @@ namespace checkShift
         {
             richTextBox1.Text = "";
             ShiftFactory shiftFactory = new ShiftFactory();
-            List<PersonalShift> personalShifts = shiftFactory.ReadShirtFromDB(dateTimePicker1.Value, dateTimePicker2.Value);
+            List<PersonalShift> personalShifts =  shiftFactory.ReadShirtFromDB(dateTimePicker1.Value, dateTimePicker2.Value, cmbUnit.Text);
 
             string errMsg = "";
             foreach (PersonalShift personalShift in personalShifts)

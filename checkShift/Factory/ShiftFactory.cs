@@ -1,5 +1,6 @@
 ﻿using checkShift.Models;
 using checkShift.Util;
+using Newtonsoft.Json;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
@@ -8,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace checkShift.Factory
 {
@@ -48,14 +51,14 @@ namespace checkShift.Factory
                 ConflictShift = new List<string>(confictshift)
             });
 
-            confictshift = new string[] { "H06", "D03", "F05" };
+            confictshift = new string[] { "A01", "D03", "D04" ,"F04","F05"};
             conflictShiftModels.Add(new ConflictShiftModel
             {
                 Shift = "H03",
                 ConflictShift = new List<string>(confictshift)
             });
 
-            confictshift = new string[] { "A01", "D05", "F04" ,"F05","F07"};
+            confictshift = new string[] { "A01", "D03", "D04", "D05", "F04", "F05","F07"};
             conflictShiftModels.Add(new ConflictShiftModel
             {
                 Shift = "H04",
@@ -104,50 +107,19 @@ namespace checkShift.Factory
 
         }
 
-        public List<PersonalShift> ReadShirtFromDB(DateTime mStartDate, DateTime mEndDate)
+        public  List<PersonalShift> ReadShirtFromDB(DateTime mStartDate, DateTime mEndDate,string UNITNNAME)
         {
-            List<PersonalShift> personalShifts = new List<PersonalShift>();
+            string UNITNO = "";
 
-            SqlSugarClient db = SugarFactory.GetInstance("data source=192.168.3.251;initial catalog=ATT_TCM;persist security info=True;user id=TCM;password=mrt+6182461824;");
+            if (UNITNNAME == "維修處") UNITNO = "L1";
+            else UNITNO = "K1";
 
-            //List<ATTENDANCE> aTTENDANCEs = db.SqlQueryable<ATTENDANCE>("SELECT TEAMMEMBER.KEYNO,TEAMMEMBER.TMNAME,TEAMMEMBER.UNITNO,ATTENDANCE.CID,ATTENDANCE.WORKDATE " +
-            //    "FROM ATTENDANCE inner join TEAMMEMBER on ATTENDANCE.KEYNO = TEAMMEMBER.KEYNO where TEAMMEMBER.UNITNO like 'L1%' and WORKDATE between '" + mStartDate.ToTaiwanDate() +"' and '" + mEndDate.ToTaiwanDate() + "'").ToList();
+            HttpClient client = new HttpClient();
+            HttpResponseMessage response =  client.GetAsync("https://erp.tmrt.com.tw/AttendanceWeb/api/Shift/ReadShirt/" + mStartDate .ToString("yyyyMMdd")+ "/"+ mEndDate.ToString("yyyyMMdd")+ "/" + UNITNO).GetAwaiter().GetResult();
 
-            List<ATTENDANCE> aTTENDANCEs = db.SqlQueryable<ATTENDANCE>("SELECT TEAMMEMBER.KEYNO,TEAMMEMBER.TMNAME,TEAMMEMBER.UNITNO,ATTENDANCE.CID,ATTENDANCE.WORKDATE " +
-                "FROM ATTENDANCE inner join TEAMMEMBER on ATTENDANCE.KEYNO = TEAMMEMBER.KEYNO where WORKDATE between '" + mStartDate.ToTaiwanDate() + "' and '" + mEndDate.ToTaiwanDate() + "'").ToList();
+            var Result = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-
-            foreach (ATTENDANCE aTTENDANCE in aTTENDANCEs)
-            {
-                PersonalShift personalShift = personalShifts.Where(e => e.UserId == aTTENDANCE.KEYNO.Trim()).FirstOrDefault();
-                
-
-                if (personalShift != null)
-                {
-                    personalShift.WorkDays.Add(new WorkDay
-                    {
-                        workDay = DateTime.Parse($"{int.Parse(aTTENDANCE.WORKDATE.Substring(0, 3)) + 1911}/{aTTENDANCE.WORKDATE.Substring(3, 2)}/{aTTENDANCE.WORKDATE.Substring(5, 2)}"),
-                        Shift = aTTENDANCE.CID
-                    });
-                }
-                else
-                {
-                    personalShift = new PersonalShift
-                    {
-                        UserId = aTTENDANCE.KEYNO.Trim(),
-                        UserName = aTTENDANCE.TMNAME.Trim(),
-                        WorkDays = new List<WorkDay>()
-                    };
-
-                    personalShift.WorkDays.Add(new WorkDay
-                    {
-                        workDay = DateTime.Parse($"{int.Parse(aTTENDANCE.WORKDATE.Substring(0, 3)) + 1911}/{aTTENDANCE.WORKDATE.Substring(3, 2)}/{aTTENDANCE.WORKDATE.Substring(5, 2)}"),
-                        Shift = aTTENDANCE.CID
-                    });
-
-                    personalShifts.Add(personalShift);
-                }
-            }
+            List<PersonalShift> personalShifts = JsonConvert.DeserializeObject<List<PersonalShift>>(Result);
 
             return personalShifts;
 

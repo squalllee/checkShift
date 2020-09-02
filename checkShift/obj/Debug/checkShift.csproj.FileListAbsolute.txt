@@ -60,3 +60,4 @@ C:\Users\jaffl\OneDrive\桌面\checkShift\checkShift\obj\Debug\checkShift.exe
 C:\Users\jaffl\OneDrive\桌面\checkShift\checkShift\obj\Debug\checkShift.pdb
 D:\Source\checkShift\checkShift\bin\Debug\SqlSugar.dll
 D:\Source\checkShift\checkShift\bin\Debug\Newtonsoft.Json.dll
+D:\Source\checkShift\checkShift\bin\Debug\Newtonsoft.Json.xml
