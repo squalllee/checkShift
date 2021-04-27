@@ -41,12 +41,13 @@
             this.button3 = new System.Windows.Forms.Button();
             this.cmbUnit = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.button4 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button1.Location = new System.Drawing.Point(84, 450);
+            this.button1.Location = new System.Drawing.Point(30, 450);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(151, 67);
             this.button1.TabIndex = 0;
@@ -134,7 +135,7 @@
             // button3
             // 
             this.button3.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.button3.Location = new System.Drawing.Point(276, 450);
+            this.button3.Location = new System.Drawing.Point(200, 450);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(151, 67);
             this.button3.TabIndex = 0;
@@ -163,11 +164,23 @@
             this.label3.TabIndex = 12;
             this.label3.Text = "單位：";
             // 
+            // button4
+            // 
+            this.button4.Font = new System.Drawing.Font("新細明體", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.button4.Location = new System.Drawing.Point(366, 450);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(158, 67);
+            this.button4.TabIndex = 13;
+            this.button4.Text = "檢查工作超過12小時";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(559, 529);
+            this.Controls.Add(this.button4);
             this.Controls.Add(this.cmbUnit);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.checkBox1);
@@ -202,6 +215,7 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.ComboBox cmbUnit;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button button4;
     }
 }
 

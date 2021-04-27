@@ -124,6 +124,20 @@ namespace checkShift.Factory
             return personalShifts;
 
         }
+
+        public List<ATTENDANCEDateTime> getAttendace(DateTime mStartDate, DateTime mEndDate)
+        {
+           
+            HttpClient client = new HttpClient();
+            HttpResponseMessage response = client.GetAsync("https://erp.tmrt.com.tw/AttendanceWeb/api/Shift/getATTENDANCE/" + mStartDate.ToString("yyyyMMdd") + "/" + mEndDate.ToString("yyyyMMdd")).GetAwaiter().GetResult();
+
+            var Result = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+            List<ATTENDANCEDateTime> aTTENDANCEDateTimes = JsonConvert.DeserializeObject<List<ATTENDANCEDateTime>>(Result);
+
+            return aTTENDANCEDateTimes;
+
+        }
         public List<PersonalShift> ReadShirt(string filePath,DateTime mStartDate, DateTime mEndDate)
         {
             List<PersonalShift> personalShifts = new List<PersonalShift>();
@@ -136,7 +150,7 @@ namespace checkShift.Factory
             int startColumnIndex = 1;
 
             DateTime currentMonth = DateTime.Parse(DateTime.Now.Year + "/" + mStartDate.Month.ToString("00") + "/01");
-            DateTime endMonth = DateTime.Parse(DateTime.Now.Year + "/" + mEndDate.Month.ToString("00") + "/01");
+            DateTime endMonth = DateTime.Parse(DateTime.Now.Year + "/" + mEndDate.AddMonths(1).Month.ToString("00") + "/01");
 
             int dayInMonth =0;
 
@@ -157,12 +171,12 @@ namespace checkShift.Factory
 
             IRow row = null;
             
-            for(int sheetIndex =0; currentMonth <= endMonth; sheetIndex++)
+            for(int sheetIndex =0; currentMonth < endMonth; sheetIndex++)
             {
                 sheet = wk.GetSheetAt(sheetIndex);
                 dayInMonth = DateTime.DaysInMonth(currentMonth.Year, currentMonth.Month);
 
-                if(currentMonth != endMonth)
+                if(currentMonth != endMonth.AddMonths(-1))
                 {
                     //讀取實際班表
                     for (int i = 1; i < sheet.LastRowNum; i++)
@@ -182,7 +196,8 @@ namespace checkShift.Factory
 
                             personalShift.WorkDays.Add(new WorkDay
                             {
-                                workDay = DateTime.Parse(row.GetCell(3).ToString().Replace(replaceString.Where(e => row.GetCell(3).ToString().Contains(e)).Single(), "")),
+                                
+                                workDay = DateTime.Parse(DateTimeExtensions.FromTaiwanDate(row.GetCell(3).ToString().Replace(replaceString.Where(e => row.GetCell(3).ToString().Contains(e)).Single(), ""))),
                                 Shift = row.GetCell(2).ToString()
                             });
 
@@ -197,7 +212,7 @@ namespace checkShift.Factory
                             {
                                 personalShift.WorkDays.Add(new WorkDay
                                 {
-                                    workDay = DateTime.Parse(row.GetCell(3).ToString().Replace(replaceString.Where(e => row.GetCell(3).ToString().Contains(e)).Single(), "")),
+                                    workDay = DateTime.Parse(DateTimeExtensions.FromTaiwanDate(row.GetCell(3).ToString().Replace(replaceString.Where(e => row.GetCell(3).ToString().Contains(e)).Single(), ""))),
                                     Shift = row.GetCell(2).ToString()
                                 });
                             }
@@ -257,28 +272,42 @@ namespace checkShift.Factory
 
         }
 
-        public bool checkShift(PersonalShift personalShift, DateTime mStartDate, DateTime mEndDate,bool isCheck8PeriodWork, out string errMsg)
+        public bool check11Shift(PersonalShift personalShift, DateTime mStartDate, DateTime mEndDate, bool isCheck8PeriodWork, out string errMsg) //檢查是否間隔11小時
         {
             errMsg = "";
             List<WorkDay> workDays = personalShift.WorkDays.OrderBy(e => e.workDay).ToList();
             int countineWorkDayCount = 0;
 
-            for (int i=0;i<workDays.Count-1;i++) //檢查是否間隔11小時
+            for (int i = 0; i < workDays.Count - 1; i++) //檢查是否間隔11小時
             {
                 ConflictShiftModel conflictShiftModel = conflictShiftModels.Where(e => e.Shift == workDays[i].Shift).FirstOrDefault();
                 if (conflictShiftModel != null)
                 {
-                    if(conflictShiftModel.ConflictShift.Contains(workDays[i+1].Shift))
+                    if (conflictShiftModel.ConflictShift.Contains(workDays[i + 1].Shift))
                     {
-                        errMsg = personalShift.UserName + "(" + personalShift.UserId +　") 日期:" + workDays[i].workDay.ToString("yyyy/MM/dd") + "與" + workDays[i+1].workDay.ToString("yyyy/MM/dd") + " 無間隔11小時，請檢查!";
+                        errMsg = personalShift.UserName + "(" + personalShift.UserId + ") 日期:" + workDays[i].workDay.ToString("yyyy/MM/dd") + "與" + workDays[i + 1].workDay.ToString("yyyy/MM/dd") + " 無間隔11小時，請檢查!";
                         return false;
                     }
                 }
             }
 
-            foreach(WorkDay workDay in workDays)//檢查是否連七
+            
+
+
+            return true;
+        }
+
+        public bool check7Shift(PersonalShift personalShift, DateTime mStartDate, DateTime mEndDate, bool isCheck8PeriodWork, out string errMsg)//檢查是否連七
+        {
+            errMsg = "";
+            List<WorkDay> workDays = personalShift.WorkDays.OrderBy(e => e.workDay).ToList();
+            int countineWorkDayCount = 0;
+
+           
+
+            foreach (WorkDay workDay in workDays)
             {
-                if(workDay.Shift.IndexOf("Z") < 0 && workDay.Shift != "")
+                if (workDay.Shift.IndexOf("Z") < 0 && workDay.Shift != "")
                 {
                     countineWorkDayCount++;
                 }
@@ -286,13 +315,29 @@ namespace checkShift.Factory
                 {
                     countineWorkDayCount = 0;
                 }
-                
-                if(countineWorkDayCount >= 7)
+
+                if (countineWorkDayCount >= 7)
                 {
                     errMsg = personalShift.UserName + "(" + personalShift.UserId + ") 於" + workDay.workDay.ToString("yyyy/MM/dd") + " 連續上班七天，請檢查!";
                     return false;
-                }  
+                }
             }
+
+            
+
+
+            return true;
+        }
+
+
+
+        public bool check8Shift(PersonalShift personalShift, DateTime mStartDate, DateTime mEndDate,bool isCheck8PeriodWork, out string errMsg)
+        {
+            errMsg = "";
+            List<WorkDay> workDays = personalShift.WorkDays.OrderBy(e => e.workDay).ToList();
+            int countineWorkDayCount = 0;
+
+            
 
             if(isCheck8PeriodWork)
             {
@@ -300,7 +345,7 @@ namespace checkShift.Factory
                 workDays = personalShift.WorkDays.Where(e => e.workDay.CompareTo(DateTime.Parse(mStartDate.ToString("yyyy/MM/dd"))) >= 0 && e.workDay.CompareTo(DateTime.Parse(mEndDate.ToString("yyyy/MM/dd"))) <= 0).OrderBy(e => e.workDay).ToList();
 
                 int HolidayCount = workDays.Where(e => e.Shift.Trim().ToUpper() == "Z01" || e.Shift.Trim().ToUpper() == "Z07").Count();
-                if (HolidayCount < 16)
+                if (HolidayCount != 16)
                 {
                     errMsg = personalShift.UserName + "(" + personalShift.UserId + ") 違反八週變形工時規定，在週期內休假" + HolidayCount + "天，請檢查!";
                     return false;

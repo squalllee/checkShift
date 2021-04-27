@@ -81,6 +81,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\ATTENDANCE.cs" />
+    <Compile Include="Models\ATTENDANCEDateTime.cs" />
     <Compile Include="Models\ConflictShift.cs" />
     <Compile Include="Models\PersonalShift.cs" />
     <Compile Include="Models\WorkDay.cs" />
